@@ -1,0 +1,10 @@
+- bugType: WEAK_MESSAGE_DIGEST
+  severity: CRITICAL
+  description: The algorithms MD2, MD5 and SHA-1 are not a recommended MessageDigest.
+  methodList:
+    - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String)>"
+      parameter: '(?i)"MD[45]"|"SHA(-?1)?"'
+    - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String,java.lang.String)>"
+      parameter: '(?i)["MD[45]"|"SHA(-?1)?"],.*'
+    - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String,java.security.Provider)>"
+      parameter: '(?i)["MD[45]"|"SHA(-?1)?"],.*'
