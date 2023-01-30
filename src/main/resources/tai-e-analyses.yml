@@ -146,3 +146,8 @@
 - description: find the method that may drop or ignore exceptions
   analysisClass: pascal.taie.analysis.bugfinder.DroppedException
   id: dropped-exception
+
+- description: find the insecure API usage
+  analysisClass: pascal.taie.analysis.bugfinder.insecureapi.InsecureAPIBugDetector
+  id: insecure-api
+

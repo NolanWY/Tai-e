@@ -1,11 +1,10 @@
-import java.io.IOException;
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException;
 
-class UnsafeAPITest{
+class InsecureAPITest{
     public static void main(String[] args) throws NoSuchAlgorithmException {
-        UnsafeAPITest un = new UnsafeAPITest();
-        un.unsafe(1);
+        InsecureAPITest un = new InsecureAPITest();
+        un.unsafe();
 
         A a = new A();
         a.unsafe1();
@@ -15,14 +14,18 @@ class UnsafeAPITest{
         MessageDigest md3 = MessageDigest.getInstance("SHA-256");
     }
 
-    public void unsafe(int i){
+    public void unsafe(){
 
     }
 }
 
 class A{
     public void unsafe1(){
-        new B().unsafe2(3);
+        int a = 3;
+        new B().unsafe2(3, "MD5");
+        new B().unsafe2(3, "");
+        new B().unsafe2(3, null);
+        new B().unsafe2(a, null);
     }
 
     protected void safe(){
@@ -31,7 +34,7 @@ class A{
 }
 
 class B{
-    public int unsafe2(int i){
+    public int unsafe2(int i, String str){
         return 0;
     }
 }
