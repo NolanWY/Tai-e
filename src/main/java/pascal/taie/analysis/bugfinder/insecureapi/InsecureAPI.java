@@ -22,5 +22,5 @@
 
 package pascal.taie.analysis.bugfinder.insecureapi;
 
-record InsecureAPI(String methodRef, String paramRegex) {
+record InsecureAPI(String reference, String paramRegex) {
 }

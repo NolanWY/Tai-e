@@ -25,5 +25,4 @@ package pascal.taie.analysis.bugfinder.insecureapi;
 import java.util.Set;
 
 record InsecureAPIBug(APIBugInfo bugInfo, Set<InsecureAPI> insecureAPISet) {
-
 }

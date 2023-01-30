@@ -105,9 +105,10 @@ class InsecureAPIBugConfig {
             if(apiList instanceof ArrayNode arrayNode) {
                 Set<InsecureAPI> apiSet = Sets.newSet(arrayNode.size());
                 for(JsonNode elem : arrayNode) {
-                    String methodRef = elem.get("reference").asText();
-                    String paramRegex = elem.get("parameter").asText();
-                    apiSet.add(new InsecureAPI(methodRef, paramRegex));
+                    String reference = elem.get("reference").asText();
+                    String paramRegex = elem.get("parameter") != null ?
+                            elem.get("parameter").asText() : null;
+                    apiSet.add(new InsecureAPI(reference, paramRegex));
                 }
                 return apiSet;
             } else {
