@@ -41,7 +41,7 @@ class ParamCondLexer {
             Rule.getRule("&", ParamCondTokenType.AND),
             Rule.getRule("\\|", ParamCondTokenType.OR),
             Rule.getRule("\\(", ParamCondTokenType.LEFT_PARENTHESES),
-            Rule.getRule("\\(", ParamCondTokenType.RIGHT_PARENTHESES)
+            Rule.getRule("\\)", ParamCondTokenType.RIGHT_PARENTHESES)
             );
 
     private ParamCondLexer() {

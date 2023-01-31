@@ -35,15 +35,12 @@ import pascal.taie.util.collection.Sets;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
 
     public static final String ID = "insecure-api";
 
     private static final Logger logger = LogManager.getLogger(InsecureAPIBugDetector.class);
-
-    private final InsecureAPIBugConfig config;
 
     private final Calculator calculator;
 
@@ -67,30 +64,31 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
     public InsecureAPIBugDetector(AnalysisConfig config){
         super(config);
 
-        this.config = InsecureAPIBugConfig.readConfig("src/main/resources/insecureapi");
+        InsecureAPIBugConfig config1 =
+                InsecureAPIBugConfig.readConfig("src/main/resources/insecureapi");
         this.calculator = Calculator.makeInstance();
         this.apiList = Maps.newMultiMap();
         this.bugInfoList = Maps.newMap();
         this.allMethodRef = Sets.newHybridSet();
 
-        this.config.getBugSet().forEach(insecureAPIBug -> {
-            insecureAPIBug.insecureAPISet().forEach(insecureAPI -> {
-                if(insecureAPI.paramRegex() != null) apiList.put(
-                        insecureAPI.reference(), insecureAPI.paramRegex());
-                calculator.infixToSuffix(insecureAPI.paramRegex());
-                bugInfoList.put(insecureAPI, insecureAPIBug.bugInfo());
-                allMethodRef.add(insecureAPI.reference());
-            });
-        });
+        config1.getBugSet().forEach(insecureAPIBug
+                -> insecureAPIBug.insecureAPISet().forEach(insecureAPI
+                -> {
+            if(insecureAPI.paramRegex() != null) apiList.put(
+                    insecureAPI.reference(), insecureAPI.paramRegex());
+            calculator.infixToSuffix(insecureAPI.paramRegex());
+            bugInfoList.put(insecureAPI, insecureAPIBug.bugInfo());
+            allMethodRef.add(insecureAPI.reference());
+        }));
     }
 
     @Override
     public Set<BugInstance> analyze(IR ir) {
         Set<BugInstance> bugInstances = Sets.newHybridSet();
 
-        ir.invokes(false).filter(invoke -> {
-            return allMethodRef.contains(invoke.getMethodRef().toString());
-        }).forEach(invoke -> {
+        ir.invokes(false).filter(invoke
+                -> allMethodRef.contains(invoke.getMethodRef().toString())).forEach(invoke
+                -> {
             APIBugInfo info = match(invoke);
 
             if(info != null){
@@ -104,29 +102,11 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
         return bugInstances;
     }
 
-    /*
-        Concat every argument to a String:
-            if argument is const, append the constValue
-            else append the name of the argument
-        Every argument is separated by ","
-    */
-    private String getParaString(Invoke invoke){
-        StringBuilder sb = new StringBuilder(invoke.getInvokeExp().getArgCount() * 16);
-
-        invoke.getInvokeExp().getArgs().forEach(arg -> {
-            sb.append(",")
-                    .append(arg.isConst() ? arg.getConstValue().toString() : arg.toString());
-        });
-        if(sb.length() > 0) sb.deleteCharAt(0);
-        logger.info(sb);
-        return sb.toString();
-    }
-
     private APIBugInfo match(Invoke invoke){
         String matchedRegex = null;
 
         for(String exp : apiList.get(invoke.getMethodRef().toString())){
-            if(calculator.getResult(invoke, exp)){
+            if(calculator.getResult(invoke.getInvokeExp().getArgs(), exp)){
                 matchedRegex = exp;
                 break;
             }
