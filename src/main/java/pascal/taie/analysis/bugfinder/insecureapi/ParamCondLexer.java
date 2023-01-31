@@ -55,7 +55,7 @@ class ParamCondLexer {
         while(position < expr.length()) {
             for(int i = 0; i < rules.size(); i++) {
                 Matcher matcher = matchers.get(i);
-                if(matcher.find(position)) {
+                if(matcher.region(position, expr.length()).lookingAt()) {
                     ParamCondTokenType type = rules.get(i).type;
                     switch(type) {
                         case NO_TYPE -> {}
