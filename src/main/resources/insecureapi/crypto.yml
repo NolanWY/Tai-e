@@ -3,11 +3,11 @@
   description: The algorithms MD2, MD5 and SHA-1 are not a recommended MessageDigest.
   methodList:
     - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String)>"
-      parameter: '(?i)"MD[45]"|"SHA(-?1)?"'
+      parameter: 'p1=/(?i)"MD[45]"|"SHA(-?1)?"/'
     - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String,java.lang.String)>"
-      parameter: '(?i)["MD[45]"|"SHA(-?1)?"],.*'
+      parameter: 'p1=/(?i)["MD[45]"|"SHA(-?1)?"]/'
     - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String,java.security.Provider)>"
-      parameter: '(?i)["MD[45]"|"SHA(-?1)?"],.*'
+      parameter: 'p1=/(?i)["MD[45]"|"SHA(-?1)?"]/'
 
 - bugType: INSECURE_API_USE
   severity: CRITICAL
@@ -16,4 +16,4 @@
     - reference: "<InsecureAPITest: void unsafe()>"
     - reference: "<A: void unsafe1()>"
     - reference: "<B: int unsafe2(int,java.lang.String)>"
-      parameter: "[0-9],.*"
+      parameter: "p1=/[0-9]/"

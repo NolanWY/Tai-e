@@ -46,7 +46,6 @@ public class Calculator {
         List<ParamCondToken> tokens = ParamCondLexer.analyze(infix);
         List<ParamCondToken> suffix = Lists.newArrayList();
         Stack<ParamCondToken> stack = new Stack<>();
-        logger.info(tokens);
 
         for(ParamCondToken token : tokens){
             switch (token.type()){
@@ -75,7 +74,7 @@ public class Calculator {
         }
 
         infixMapSuffix.put(infix, suffix);
-        logger.info(infix + "|||" + suffix);
+        //logger.info(suffix);
     }
 
     public boolean getResult(List<Var> vars, String infix){
@@ -103,9 +102,10 @@ public class Calculator {
         if(index.token().length() == 3) i = i * 10 + (index.token().charAt(2) - '0');
 
         switch (opr.type()) {
-            case EQ -> matched = regex.token().matches(paramString(vars.get(i)));
-            case NEQ -> matched = !regex.token().matches(paramString(vars.get(i)));
+            case EQ -> matched = paramString(vars.get(i - 1)).matches(regex.token());
+            case NEQ -> matched = !paramString(vars.get(i - 1)).matches(regex.token());
         }
+        logger.info(index.token() + opr.token() + regex.token() + "|||" + paramString(vars.get(i - 1)) + " " + matched);
 
         return matched;
     }
@@ -116,12 +116,5 @@ public class Calculator {
 
     public static Calculator makeInstance(){
         return new Calculator();
-    }
-
-    public static void main(String[] args){
-        Calculator ca = Calculator.makeInstance();
-//        ca.infixToSuffix("(p1!=/\"MD5\"/ & p2=/12<3|&^()ss/) | (p2=/null/) | (p1=/_x\\/xx/ & p3=/x x_x/)");
-        ca.infixToSuffix("(p1!=/null/)");
-
     }
 }

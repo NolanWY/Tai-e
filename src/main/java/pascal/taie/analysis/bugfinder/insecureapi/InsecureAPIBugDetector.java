@@ -74,9 +74,11 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
         config1.getBugSet().forEach(insecureAPIBug
                 -> insecureAPIBug.insecureAPISet().forEach(insecureAPI
                 -> {
-            if(insecureAPI.paramRegex() != null) apiList.put(
-                    insecureAPI.reference(), insecureAPI.paramRegex());
-            calculator.infixToSuffix(insecureAPI.paramRegex());
+            if(insecureAPI.paramRegex() != null) {
+                apiList.put(
+                        insecureAPI.reference(), insecureAPI.paramRegex());
+                calculator.infixToSuffix(insecureAPI.paramRegex());
+            }
             bugInfoList.put(insecureAPI, insecureAPIBug.bugInfo());
             allMethodRef.add(insecureAPI.reference());
         }));
