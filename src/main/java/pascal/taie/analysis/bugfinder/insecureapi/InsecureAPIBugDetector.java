@@ -104,6 +104,10 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
         return bugInstances;
     }
 
+    /*
+        Use the information of invoke to get APIBugInfo
+        APIBugInfo may be null, which means matching failed
+     */
     private APIBugInfo match(Invoke invoke){
         String matchedRegex = null;
 

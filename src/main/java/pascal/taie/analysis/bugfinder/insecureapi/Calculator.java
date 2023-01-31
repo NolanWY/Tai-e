@@ -34,6 +34,12 @@ import java.util.Stack;
 
 public class Calculator {
 
+    /*
+        Map from infix to suffix
+        Infix is a logical expression String
+        Suffix is a list of ParamCondToken which can be calculated to a boolean
+        Cache this map can avoid multiple calculations
+    */
     private final Map<String, List<ParamCondToken>> infixMapSuffix;
 
     private static final Logger logger = LogManager.getLogger(Calculator.class);
@@ -42,6 +48,9 @@ public class Calculator {
         infixMapSuffix = Maps.newMap();
     }
 
+    /*
+        Transfer infix to suffix and store the map
+     */
     public void infixToSuffix(String infix){
         List<ParamCondToken> tokens = ParamCondLexer.analyze(infix);
         List<ParamCondToken> suffix = Lists.newArrayList();
@@ -75,9 +84,11 @@ public class Calculator {
         while(!stack.empty()) suffix.add(stack.pop());
 
         infixMapSuffix.put(infix, suffix);
-        //logger.info(suffix);
     }
 
+    /*
+        Calculate logical expression suffix expression to boolean
+     */
     public boolean getResult(List<Var> vars, String infix){
         List<ParamCondToken> suffix = infixMapSuffix.get(infix);
         Stack<ParamCondToken> paramStack = new Stack<>();
@@ -96,6 +107,9 @@ public class Calculator {
         return boolStack.pop();
     }
 
+    /*
+        Calculate the atom logical expression "pn=xxx"
+     */
     private boolean judgeAtom(
             ParamCondToken regex, ParamCondToken index, ParamCondToken opr, List<Var> vars){
         boolean matched = true;
@@ -106,11 +120,15 @@ public class Calculator {
             case EQ -> matched = paramString(vars.get(i - 1)).matches(regex.token());
             case NEQ -> matched = !paramString(vars.get(i - 1)).matches(regex.token());
         }
-        logger.info(index.token() + opr.token() + regex.token() + "|||" + paramString(vars.get(i - 1)) + " " + matched);
 
         return matched;
     }
 
+    /*
+        Get the String of Var
+            if Var is const, return the constValue
+            else return the name of Var
+     */
     private String paramString(Var v){
         return v.isConst() ? v.getConstValue().toString() : v.toString();
     }
