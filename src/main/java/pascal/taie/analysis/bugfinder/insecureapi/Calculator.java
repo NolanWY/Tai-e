@@ -72,6 +72,7 @@ public class Calculator {
                 case NO_TYPE: break;
             }
         }
+        while(!stack.empty()) suffix.add(stack.pop());
 
         infixMapSuffix.put(infix, suffix);
         //logger.info(suffix);

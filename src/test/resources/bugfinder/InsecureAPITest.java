@@ -22,7 +22,7 @@ class InsecureAPITest{
 class A{
     public void unsafe1(){
         int a = 3;
-        new B().unsafe2(3, "MD5");
+        new B().unsafe2(a, "MD5");
         new B().unsafe2(3, "");
         new B().unsafe2(3, null);
         new B().unsafe2(a, null);
