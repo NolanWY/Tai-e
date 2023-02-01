@@ -17,3 +17,45 @@
     - reference: '<A: void unsafe1()>'
     - reference: '<B: int unsafe2(int,java.lang.String)>'
       parameter: '(p1=/[0-9]/ | p2=/null/)'
+
+- bugType: NULL_CIPHER_USE #063
+  severity: CRITICAL
+  description: The NullCipher provides the same cipher text as plaintext, which is dangerous for the confiditiality.
+  methodList:
+    - reference: "<javax.crypto.NullCipher: void init()>"
+
+- bugType: UNENCRYPTED_SOCKET #064 065
+  severity: CRITICAL
+  description: If the communication channel used is not encrypted, the traffic can be read by an attacker, which is dangerous.
+  methodList:
+    - reference: "<java.net.Socket: void init(java.lang.String, int)>"
+      parameter: '.*,.*'
+    - reference: "<java.net.Socket: void init(java.lang.String, int, boolean)>"
+      parameter: '.*,.*,.*'
+    - reference: "<java.net.Socket: void init(java.lang.String, int, java.net.InetAddress, int)>"
+      parameter: '.*,.*,.*,.*'
+    - reference: "<java.net.Socket: void init(java.net.InetAddress, int)>"
+      parameter: '.*,.*'
+    - reference: "<java.net.ServerSocket: void init(int)>"
+      parameter: '.*'
+    - reference: "<java.net.ServerSocket: void init()>"
+    - reference: "<java.net.ServerSocket: void init(int, int)>"
+      parameter: '.*,.*'
+    - reference: "<java.net.ServerSocket: void init(int, int, java.net.InetAddress)>"
+      parameter: '.*,.*,.*'
+
+- bugType: DES_AND_DESede_IS_INSECURE #066 067
+  severity: CRITICAL
+  description: The DES algorithm, cannot provide a strong enough protection for classified information and should be deprecated.
+  methodList:
+    - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
+      parameter: 'DES.*' # how to write
+    - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string, java.lang.string)>"
+      parameter: 'DES.*,.*' # how to write
+
+- bugType: RSA_WITHOUT_PADDING_IS_INSECURE #068
+  severity: MINOR
+  description: The DES algorithm without paddling can allow an attacker to obtain the statistical properties of the plaintext from a large number of ciphertexts, which is vulnerable.
+  methodList:
+    - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
+      parameter: '\bRSA\w+?NoPaddling\b'
