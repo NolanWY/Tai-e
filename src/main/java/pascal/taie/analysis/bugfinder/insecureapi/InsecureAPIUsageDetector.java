@@ -107,7 +107,6 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
                 break;
             }
         }
-        logger.info(invoke.getInvokeExp() + " matched " + matchedPattern);
         return bugInfoMap.get(new InsecureAPI(invoke.getMethodRef().toString(), matchedPattern));
     }
 }
