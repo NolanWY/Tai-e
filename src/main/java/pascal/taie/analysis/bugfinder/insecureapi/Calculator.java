@@ -110,8 +110,7 @@ public class Calculator {
     private static boolean judgeAtom(
             ParamCondToken regex, ParamCondToken index, ParamCondToken opr, List<Var> vars){
         boolean matched = true;
-        int i = index.token().charAt(1) - '0';
-        if(index.token().length() == 3) i = i * 10 + (index.token().charAt(2) - '0');
+        int i = Integer.parseInt(index.token());
 
         switch (opr.type()) {
             case EQ -> matched = paramString(vars.get(i - 1)).matches(regex.token());
