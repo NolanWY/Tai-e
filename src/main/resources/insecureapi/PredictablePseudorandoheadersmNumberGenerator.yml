@@ -1,4 +1,4 @@
-# ID：001
+# ID:001
 - bugType: PREDICTABLE_PSEUDORANDOM_NUMBER
   severity: CRITICAL
   description: Generic random number generators do not meet security requirements.

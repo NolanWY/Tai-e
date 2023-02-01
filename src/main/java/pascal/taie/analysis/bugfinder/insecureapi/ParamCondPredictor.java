@@ -35,9 +35,6 @@ class ParamCondPredictor {
     private static final Map<String, ExprTreeNode> exprMap = Maps.newMap();
 
     public static boolean test(List<Var> varList, String expr) {
-        //ExprTreeNode exprTree = exprMap.computeIfAbsent(expr,
-                //s -> ExprParser.parse(s, ExprLexer.scan(s)));
-        //return eval(varList, exprTree);
         ExprTreeNode exprTree = exprMap.get(expr);
         if(exprTree == null) {
             exprTree = ExprParser.parse(expr, ExprLexer.scan(expr));
@@ -182,7 +179,7 @@ class ParamCondPredictor {
             return switch (type) {
                 case OR -> 0;
                 case AND -> 1;
-                case EQ, NEQ -> 3;
+                case EQ, NEQ -> 2;
                 default -> throw new AnalysisException(type + "isn't an operator");
             };
         }
