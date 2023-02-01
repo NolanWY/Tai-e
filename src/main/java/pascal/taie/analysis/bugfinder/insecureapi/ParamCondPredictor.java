@@ -149,7 +149,7 @@ class ParamCondPredictor {
                         case LEFT_PARENTHESES -> operatorStack.push(token);
                         case INDEX, REGEX -> operandStack.push(new ExprTreeNode(token, null, null));
                         case EQ, NEQ, AND, OR -> {
-                            if(!operatorStack.isEmpty()
+                            while(!operatorStack.isEmpty()
                                     && operatorStack.peek().type() != ExprTokenType.LEFT_PARENTHESES
                                     && getPriority(token.type()) <= getPriority(operatorStack.peek().type())) {
                                 operandStack.push(extractExpr(operandStack, operatorStack));
