@@ -24,6 +24,7 @@ package pascal.taie.analysis.bugfinder.insecureapi;
 
 import pascal.taie.ir.exp.Var;
 import pascal.taie.util.AnalysisException;
+import pascal.taie.util.collection.Lists;
 import pascal.taie.util.collection.Maps;
 
 import java.util.*;
@@ -104,7 +105,7 @@ class ParamCondPredictor {
 
         public static List<ExprToken> scan(String expr) {
             List<ExprToken> tokenList = new ArrayList<>();
-            List<Matcher> matchers = pascal.taie.util.collection.Lists.map(rules, rule -> rule.pattern.matcher(expr));
+            List<Matcher> matchers = Lists.map(rules, rule -> rule.pattern.matcher(expr));
             int position = 0;
             outer:
             while(position < expr.length()) {
