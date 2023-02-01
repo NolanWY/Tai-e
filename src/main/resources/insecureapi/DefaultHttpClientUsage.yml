@@ -1,5 +1,5 @@
 # ID:023 (deprecated)
-- bugType: DEFAULTHTTPCLIENT_USAGE
+- bugType: DEFAULTHTTPCLIENT_CONSTRUCTOR_USAGE
   severity: MAJOR
   description: This constructor of DefaultHttpClient is not recommended, because it does not include TLSv1.2.
   methodList:
