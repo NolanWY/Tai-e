@@ -55,7 +55,7 @@
 
 - bugType: RSA_WITHOUT_PADDING_IS_INSECURE #068
   severity: MINOR
-  description: The DES algorithm without paddling can allow an attacker to obtain the statistical properties of the plaintext from a large number of ciphertexts, which is vulnerable.
+  description: The RSA algorithm without paddling can allow an attacker to obtain the statistical properties of the plaintext from a large number of ciphertexts, which is vulnerable.
   methodList:
     - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
       parameter: '\bRSA\w+?NoPaddling\b'
