@@ -29,33 +29,35 @@
   description: If the communication channel used is not encrypted, the traffic can be read by an attacker, which is dangerous.
   methodList:
     - reference: "<java.net.Socket: void init(java.lang.String, int)>"
-      parameter: '.*,.*'
     - reference: "<java.net.Socket: void init(java.lang.String, int, boolean)>"
-      parameter: '.*,.*,.*'
     - reference: "<java.net.Socket: void init(java.lang.String, int, java.net.InetAddress, int)>"
-      parameter: '.*,.*,.*,.*'
     - reference: "<java.net.Socket: void init(java.net.InetAddress, int)>"
-      parameter: '.*,.*'
     - reference: "<java.net.ServerSocket: void init(int)>"
-      parameter: '.*'
     - reference: "<java.net.ServerSocket: void init()>"
     - reference: "<java.net.ServerSocket: void init(int, int)>"
-      parameter: '.*,.*'
     - reference: "<java.net.ServerSocket: void init(int, int, java.net.InetAddress)>"
-      parameter: '.*,.*,.*'
 
 - bugType: DES_AND_DESede_IS_INSECURE #066 067
   severity: CRITICAL
-  description: The DES algorithm, cannot provide a strong enough protection for classified information and should be deprecated.
+  description: The DES/DESede algorithm, cannot provide a strong enough protection for classified information and should be deprecated.
   methodList:
     - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
-      parameter: 'DES.*' # how to write
+      parameter: 'p1 = /"DES.*"/'
     - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string, java.lang.string)>"
-      parameter: 'DES.*,.*' # how to write
+      parameter: 'p1 = /"DES.*"/'
 
 - bugType: RSA_WITHOUT_PADDING_IS_INSECURE #068
   severity: MINOR
   description: The RSA algorithm without paddling can allow an attacker to obtain the statistical properties of the plaintext from a large number of ciphertexts, which is vulnerable.
   methodList:
     - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
-      parameter: '\bRSA\w+?NoPaddling\b'
+      parameter: 'p1 = /"RSA\w+?NoPaddling"/' # RSA without paddling is unsafe
+
+- bugType: CIPHER_WITHOUT_INTEGRITY_IS_INSECURE #088 089 090
+  severity: CRITICAL
+  description: CBC/OFB/CTR/ECB encryption algorithms do not undergo integrity checking, and an attacker can arbitrarily tamper with the encrypted ciphertext without passing the integrity check, which is dangerous.
+  methodList:
+    - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
+      parameter: 'p1 = /"\w+?[CBC|OFB|CTR|ECB]\w+"/' # when the parameter contains CBC or OFB or CTR or ECB, it is dangerous // 090 088
+    - reference: "<javax.crypto.Cipher: javax.crypto.Cipher getInstance(java.lang.string)>"
+      parameter: 'p1 = /"\w+?CBC\\/PKCS5Padding"/' # when the parameter contains CBC/PKCS5Padding, it is dangerous // 089
