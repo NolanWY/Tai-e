@@ -33,71 +33,64 @@ import pascal.taie.util.collection.Maps;
 import pascal.taie.util.collection.MultiMap;
 import pascal.taie.util.collection.Sets;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
-public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
+public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
 
     public static final String ID = "insecure-api";
 
-    private static final Logger logger = LogManager.getLogger(InsecureAPIBugDetector.class);
+    private static final Logger logger = LogManager.getLogger(InsecureAPIUsageDetector.class);
+
+    private static final String configPath = "src/main/resources/insecureapi";
 
     /*
         Store the map from methodRef(String) to the
         patterns(Set<Pattern>) that have compiled the
         regex from configuration file
     */
-    private final MultiMap<String, String> apiList;
+    private final MultiMap<String, String> paramPatternMap;
 
     /*
         Store the map from InsecureAPI to APIBugInfo
         it's convenient to get the information to create
         the BugInstance via this map
     */
-    private final Map<InsecureAPI, APIBugInfo> bugInfoList;
+    private final Map<InsecureAPI, APIBugInfo> bugInfoMap;
 
     // Store all methodRef in the configuration file
-    private final Set<String> allMethodRef;
+    private final Set<String> insecureMethodRef;
 
-    public InsecureAPIBugDetector(AnalysisConfig config){
+    public InsecureAPIUsageDetector(AnalysisConfig config){
         super(config);
+        InsecureAPIBugConfig bugConfig = InsecureAPIBugConfig.readConfig(configPath);
+        this.paramPatternMap = Maps.newMultiMap();
+        this.bugInfoMap = Maps.newMap();
+        this.insecureMethodRef = Sets.newSet();
 
-        InsecureAPIBugConfig config1 =
-                InsecureAPIBugConfig.readConfig("src/main/resources/insecureapi");
-        this.apiList = Maps.newMultiMap();
-        this.bugInfoList = Maps.newMap();
-        this.allMethodRef = Sets.newHybridSet();
-
-        config1.getBugSet().forEach(insecureAPIBug
-                -> insecureAPIBug.insecureAPISet().forEach(insecureAPI
-                -> {
-            if(insecureAPI.paramRegex() != null) {
-                apiList.put(
-                        insecureAPI.reference(), insecureAPI.paramRegex());
-                Calculator.infixToSuffix(insecureAPI.paramRegex());
-            }
-            bugInfoList.put(insecureAPI, insecureAPIBug.bugInfo());
-            allMethodRef.add(insecureAPI.reference());
+        bugConfig.getBugSet().forEach(bug ->
+                bug.insecureAPISet().forEach(insecureAPI -> {
+                    if(insecureAPI.paramRegex() != null) {
+                        paramPatternMap.put(insecureAPI.reference(), insecureAPI.paramRegex());
+                    }
+                    bugInfoMap.put(insecureAPI, bug.bugInfo());
+                    insecureMethodRef.add(insecureAPI.reference());
         }));
     }
 
     @Override
     public Set<BugInstance> analyze(IR ir) {
         Set<BugInstance> bugInstances = Sets.newHybridSet();
-
-        ir.invokes(false).filter(invoke
-                -> allMethodRef.contains(invoke.getMethodRef().toString())).forEach(invoke
-                -> {
-            APIBugInfo info = match(invoke);
-
+        ir.invokes(false)
+                .filter(invoke -> insecureMethodRef.contains(invoke.getMethodRef().toString()))
+                .forEach(invoke -> {
+            APIBugInfo info = getBugInfo(invoke);
             if(info != null){
-                BugInstance bugInstance = new BugInstance(
-                        info.bugType(), info.severity(), ir.getMethod())
-                        .setSourceLine(invoke.getLineNumber());
-                bugInstances.add(bugInstance);
+                bugInstances.add(new BugInstance(info.bugType(), info.severity(), ir.getMethod())
+                        .setSourceLine(invoke.getLineNumber()));
             }
         });
-
         return bugInstances;
     }
 
@@ -105,16 +98,16 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
         Use the information of invoke to get APIBugInfo
         APIBugInfo may be null, which means matching failed
      */
-    private APIBugInfo match(Invoke invoke){
-        String matchedRegex = null;
-
-        for(String exp : apiList.get(invoke.getMethodRef().toString())){
-            if(Calculator.getResult(invoke.getInvokeExp().getArgs(), exp)){
-                matchedRegex = exp;
+    @Nullable
+    private APIBugInfo getBugInfo(Invoke invoke){
+        String matchedPattern = null;
+        for(String patternRegex : paramPatternMap.get(invoke.getMethodRef().toString())){
+            if(ParamCondPredictor.test(invoke.getInvokeExp().getArgs(), patternRegex)){
+                matchedPattern = patternRegex;
                 break;
             }
         }
-
-        return bugInfoList.get(new InsecureAPI(invoke.getMethodRef().toString(), matchedRegex));
+        logger.info(invoke.getInvokeExp() + " matched " + matchedPattern);
+        return bugInfoMap.get(new InsecureAPI(invoke.getMethodRef().toString(), matchedPattern));
     }
 }
