@@ -34,7 +34,7 @@ class ParamCondLexer {
 
     private static final List<Rule> rules = List.of(
             Rule.getRule(" +", ParamCondTokenType.NO_TYPE),
-            Rule.getRule("p[1-9][0-9]*", ParamCondTokenType.INDEX),
+            Rule.getRule("p([1-9][0-9]*)", ParamCondTokenType.INDEX),
             Rule.getRule("/((?:[^/\\\\]|\\\\.)*)/", ParamCondTokenType.REGEX),
             Rule.getRule("=", ParamCondTokenType.EQ),
             Rule.getRule("!=", ParamCondTokenType.NEQ),
@@ -59,6 +59,7 @@ class ParamCondLexer {
                     ParamCondTokenType type = rules.get(i).type;
                     switch(type) {
                         case NO_TYPE -> {}
+                        case INDEX -> tokenList.add(new ParamCondToken(type, matcher.group(1)));
                         case REGEX -> tokenList.add(new ParamCondToken(type,
                                 matcher.group(1).replace("\\/", "/")));
                         default -> tokenList.add(new ParamCondToken(type, matcher.group()));
