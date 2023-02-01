@@ -147,6 +147,6 @@
   analysisClass: pascal.taie.analysis.bugfinder.DroppedException
   id: dropped-exception
 
-- description: find the insecure API usage
-  analysisClass: pascal.taie.analysis.bugfinder.insecureapi.InsecureAPIBugDetector
+- description: find insecure API usage
+  analysisClass: pascal.taie.analysis.bugfinder.insecureapi.InsecureAPIUsageDetector
   id: insecure-api
