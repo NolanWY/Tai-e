@@ -40,18 +40,15 @@ public class Calculator {
         Suffix is a list of ParamCondToken which can be calculated to a boolean
         Cache this map can avoid multiple calculations
     */
-    private final Map<String, List<ParamCondToken>> infixMapSuffix;
+    private static final Map<String, List<ParamCondToken>> infixMapSuffix
+            = Maps.newMap();
 
     private static final Logger logger = LogManager.getLogger(Calculator.class);
-
-    private Calculator(){
-        infixMapSuffix = Maps.newMap();
-    }
 
     /*
         Transfer infix to suffix and store the map
      */
-    public void infixToSuffix(String infix){
+    public static void infixToSuffix(String infix){
         List<ParamCondToken> tokens = ParamCondLexer.analyze(infix);
         List<ParamCondToken> suffix = Lists.newArrayList();
         Stack<ParamCondToken> stack = new Stack<>();
@@ -89,7 +86,7 @@ public class Calculator {
     /*
         Calculate logical expression suffix expression to boolean
      */
-    public boolean getResult(List<Var> vars, String infix){
+    public static boolean getResult(List<Var> vars, String infix){
         List<ParamCondToken> suffix = infixMapSuffix.get(infix);
         Stack<ParamCondToken> paramStack = new Stack<>();
         Stack<Boolean> boolStack = new Stack<>();
@@ -110,7 +107,7 @@ public class Calculator {
     /*
         Calculate the atom logical expression "pn=xxx"
      */
-    private boolean judgeAtom(
+    private static boolean judgeAtom(
             ParamCondToken regex, ParamCondToken index, ParamCondToken opr, List<Var> vars){
         boolean matched = true;
         int i = index.token().charAt(1) - '0';
@@ -129,11 +126,7 @@ public class Calculator {
             if Var is const, return the constValue
             else return the name of Var
      */
-    private String paramString(Var v){
+    private static String paramString(Var v){
         return v.isConst() ? v.getConstValue().toString() : v.toString();
-    }
-
-    public static Calculator makeInstance(){
-        return new Calculator();
     }
 }

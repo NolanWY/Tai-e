@@ -42,8 +42,6 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
 
     private static final Logger logger = LogManager.getLogger(InsecureAPIBugDetector.class);
 
-    private final Calculator calculator;
-
     /*
         Store the map from methodRef(String) to the
         patterns(Set<Pattern>) that have compiled the
@@ -66,7 +64,6 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
 
         InsecureAPIBugConfig config1 =
                 InsecureAPIBugConfig.readConfig("src/main/resources/insecureapi");
-        this.calculator = Calculator.makeInstance();
         this.apiList = Maps.newMultiMap();
         this.bugInfoList = Maps.newMap();
         this.allMethodRef = Sets.newHybridSet();
@@ -77,7 +74,7 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
             if(insecureAPI.paramRegex() != null) {
                 apiList.put(
                         insecureAPI.reference(), insecureAPI.paramRegex());
-                calculator.infixToSuffix(insecureAPI.paramRegex());
+                Calculator.infixToSuffix(insecureAPI.paramRegex());
             }
             bugInfoList.put(insecureAPI, insecureAPIBug.bugInfo());
             allMethodRef.add(insecureAPI.reference());
@@ -112,7 +109,7 @@ public class InsecureAPIBugDetector extends MethodAnalysis<Set<BugInstance>> {
         String matchedRegex = null;
 
         for(String exp : apiList.get(invoke.getMethodRef().toString())){
-            if(calculator.getResult(invoke.getInvokeExp().getArgs(), exp)){
+            if(Calculator.getResult(invoke.getInvokeExp().getArgs(), exp)){
                 matchedRegex = exp;
                 break;
             }
