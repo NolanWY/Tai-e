@@ -38,14 +38,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Option class for Tai-e.
  * We name this class in the plural to avoid name collision with {@link Option}.
  */
 @Command(name = "Options",
-        // to reduce #options, we show version info in the footer of help
-        footer = "--------------------\nVersion 0.1\n--------------------",
         description = "Tai-e options",
         usageHelpWidth = 120
 )
@@ -99,10 +98,11 @@ public class Options {
 
     @JsonProperty
     @Option(names = {"--input-classes"},
-            description = "The classes should be included in the World of analyzed program" +
-                    " (the classes can be split by ',')",
+            description = "The classes should be included in the World of analyzed program." +
+                    " You can specify class names or paths to input files (.txt)." +
+                    " Multiple entries are split by ','",
             split = ",",
-            paramLabel="<inputClass>")
+            paramLabel = "<inputClass|inputFile>")
     private List<String> inputClasses = List.of();
 
     public List<String> getInputClasses() {
@@ -199,6 +199,7 @@ public class Options {
     @JsonProperty
     @Option(names = {"-a", "--analysis"},
             description = "Analyses to be executed",
+            paramLabel = "<analysisID[=<options>]>",
             mapFallbackValue = "")
     private Map<String, String> analyses = Map.of();
 
@@ -214,6 +215,18 @@ public class Options {
 
     public boolean isOnlyGenPlan() {
         return onlyGenPlan;
+    }
+
+    @JsonProperty
+    @Option(names = {"-kr", "--keep-result"},
+            description = "The analyses whose results are kept" +
+                    " (multiple analyses are split by ',', default: ${DEFAULT-VALUE})",
+            split = ",", paramLabel = "<analysisID>",
+            defaultValue = "$KEEP-ALL")
+    private Set<String> keepResult;
+
+    public Set<String> getKeepResult() {
+        return keepResult;
     }
 
     /**
@@ -302,7 +315,7 @@ public class Options {
         return "Options{" +
                 "optionsFile=" + optionsFile +
                 ", printHelp=" + printHelp +
-                ", classPath=" + classPath +
+                ", classPath='" + classPath + '\'' +
                 ", mainClass='" + mainClass + '\'' +
                 ", inputClasses=" + inputClasses +
                 ", javaVersion=" + javaVersion +
@@ -315,6 +328,7 @@ public class Options {
                 ", planFile=" + planFile +
                 ", analyses=" + analyses +
                 ", onlyGenPlan=" + onlyGenPlan +
+                ", keepResult=" + keepResult +
                 '}';
     }
 }

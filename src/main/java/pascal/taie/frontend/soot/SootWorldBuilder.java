@@ -50,11 +50,14 @@ import soot.Transform;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static soot.SootClass.HIERARCHY;
 
@@ -69,8 +72,8 @@ public class SootWorldBuilder extends AbstractWorldBuilder {
     private static final String BASIC_CLASSES = "basic-classes.yml";
 
     @Override
-    public void build(Options options, List<AnalysisConfig> plan) {
-        initSoot(options, plan, this);
+    public void build(Options options, List<AnalysisConfig> analyses) {
+        initSoot(options, analyses, this);
         // set arguments and run soot
         List<String> args = new ArrayList<>();
         // set class path
@@ -80,12 +83,15 @@ public class SootWorldBuilder extends AbstractWorldBuilder {
         if (mainClass != null) {
             Collections.addAll(args, "-main-class", mainClass, mainClass);
         }
-        // set input classes
-        args.addAll(options.getInputClasses());
+        // set directly-specified input classes
+        options.getInputClasses()
+                .stream()
+                .filter(s -> !isInputClassFile(s))
+                .forEach(args::add);
         runSoot(args.toArray(new String[0]));
     }
 
-    private static void initSoot(Options options, List<AnalysisConfig> plan,
+    private static void initSoot(Options options, List<AnalysisConfig> analyses,
                                  SootWorldBuilder builder) {
         // reset Soot
         G.reset();
@@ -121,7 +127,8 @@ public class SootWorldBuilder extends AbstractWorldBuilder {
 
         Scene scene = G.v().soot_Scene();
         addBasicClasses(scene);
-        addReflectionLogClasses(plan, scene);
+        addInputClasses(scene, options.getInputClasses());
+        addReflectionLogClasses(analyses, scene);
 
         // Configure Soot transformer
         Transform transform = new Transform(
@@ -155,6 +162,19 @@ public class SootWorldBuilder extends AbstractWorldBuilder {
         }
     }
 
+    private static void addInputClasses(Scene scene, List<String> inputClasses) {
+        inputClasses.stream()
+                .filter(AbstractWorldBuilder::isInputClassFile)
+                .forEach(filePath -> {
+                    try (Stream<String> lines = Files.lines(Path.of(filePath))) {
+                        lines.forEach(scene::addBasicClass);
+                    } catch (IOException e) {
+                        logger.warn("Failed to read input class file {} due to {}",
+                                filePath, e);
+                    }
+                });
+    }
+
     /**
      * Add classes in reflection log to the scene.
      * Tai-e's ClassHierarchy depends on Soot's Scene, which does not change
@@ -163,10 +183,13 @@ public class SootWorldBuilder extends AbstractWorldBuilder {
      * <p>
      * TODO: this is a tentative solution. We should remove it and use other
      *  way to load basic classes in the reflection log, so that world builder
-     *  does not depend on analysis plan.
+     *  does not depend on analyses to be executed.
+     *
+     * @param analyses the analyses to be executed
+     * @param scene    the Soot's scene
      */
-    private static void addReflectionLogClasses(List<AnalysisConfig> plan, Scene scene) {
-        plan.forEach(config -> {
+    private static void addReflectionLogClasses(List<AnalysisConfig> analyses, Scene scene) {
+        analyses.forEach(config -> {
             if (config.getId().equals(PointerAnalysis.ID)) {
                 String path = config.getOptions().getString("reflection-log");
                 if (path != null) {
