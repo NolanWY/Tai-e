@@ -15,7 +15,7 @@ public class InsecureAPITest {
 
     @Test
     public void test() {
-        testInsecureAPI("Random");
+        testInsecureAPI("RandomTest");
     }
 
 
