@@ -43,27 +43,28 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
 
     private static final Logger logger = LogManager.getLogger(InsecureAPIUsageDetector.class);
 
-    private static final String configPath = "src/main/resources/insecureapi";
+    private final String configPath;
 
-    /*
-        Store the map from methodRef(String) to the
-        patterns(Set<Pattern>) that have compiled the
-        regex from configuration file
+    /**
+     Store the map from methodRef(String) to parameters(Set<String>)
     */
     private final MultiMap<String, String> paramPatternMap;
 
-    /*
-        Store the map from InsecureAPI to APIBugInfo
-        it's convenient to get the information to create
-        the BugInstance via this map
+    /**
+     Store the map from InsecureAPI to APIBugInfo
+     it's convenient to get the information to create
+     the BugInstance via this map
     */
     private final Map<InsecureAPI, APIBugInfo> bugInfoMap;
 
-    // Store all methodRef in the configuration file
+    /**
+     * Store all methodRef in the configuration file
+     */
     private final Set<String> insecureMethodRef;
 
     public InsecureAPIUsageDetector(AnalysisConfig config){
         super(config);
+        this.configPath = config.getOptions().get("path").toString();
         InsecureAPIBugConfig bugConfig = InsecureAPIBugConfig.readConfig(configPath);
         this.paramPatternMap = Maps.newMultiMap();
         this.bugInfoMap = Maps.newMap();
@@ -94,9 +95,11 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
         return bugInstances;
     }
 
-    /*
-        Use the information of invoke to get APIBugInfo
-        APIBugInfo may be null, which means matching failed
+    /**
+     Use the information of invoke to get APIBugInfo.
+     APIBugInfo may be null, which means matching failed
+
+     @return corresponding APIBugInfo if matching successful, otherwise null
      */
     @Nullable
     private APIBugInfo getBugInfo(Invoke invoke){

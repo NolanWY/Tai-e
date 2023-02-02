@@ -150,3 +150,5 @@
 - description: find insecure API usage
   analysisClass: pascal.taie.analysis.bugfinder.insecureapi.InsecureAPIUsageDetector
   id: insecure-api
+  options:
+    path: src/main/resources/insecureapi
