@@ -31,6 +31,7 @@ import org.junit.runners.Suite;
         DroppedExceptionTest.class,
         IsNullTest.class,
         NullPointerDetectionTest.class,
+        InsecureAPITest.class,
 })
 public class BugFinderTestSuite {
 }
