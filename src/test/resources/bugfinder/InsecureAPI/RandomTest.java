@@ -1,8 +1,22 @@
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.math.JVMRandom;
+import org.apache.commons.lang.math.RandomUtils;
 import java.security.SecureRandom;
 import java.util.Random;
-
 public class RandomTest
 {
+
+    public static void main(String[] args)
+    {
+        RandomTest s = new RandomTest();
+        //System.out.println("1: "+s.JVMRandomTest());
+        //System.out.println("2: "+s.randomTest());
+        //System.out.println("3: "+s.mathTest());
+        //System.out.println("4: "+s.RandomUtilsTest());
+        //System.out.println("5: "+s.RandomStringUtilsTest());
+        //System.out.println("6: "+s.securityRandom());
+    }
+
     long randomTest()
     {
         Random r1 = new Random();
@@ -57,15 +71,19 @@ public class RandomTest
     {
         Random rr = new Random();
         RandomStringUtils r = new RandomStringUtils();
-        int temp = 999;
-        char[] tempStr = {'a','b','c'};
+        int temp = 1;
+        //char[] tempStr = {'a','b','c'};
+        char[] tempStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
         String str1 = RandomStringUtils.random(temp);
         String str2 = RandomStringUtils.random(temp,str1);
         String str3 = RandomStringUtils.random(temp, tempStr);
-        String str4 = RandomStringUtils.random(temp,false, true);
-        String str5 = RandomStringUtils.random(temp,0,1,false,true);
-        String str6 = RandomStringUtils.random(temp,0,1,false,true,tempStr);
-        String str7 = RandomStringUtils.random(temp,0,1,false,true,tempStr,rr);
+        String str4 = RandomStringUtils.random(temp,true, true);
+
+        String str5 = RandomStringUtils.random(temp,0,0,true,true);
+        String str6 = RandomStringUtils.random(temp,0,61,true,true,tempStr);
+        String str7 = RandomStringUtils.random(temp,0,61,true,true,tempStr,rr);
+
+        //System.out.println("sss");
         String str9 = RandomStringUtils.randomAscii(temp);
         //String str10 = RandomStringUtils.randomAscii(temp,temp);
         String str11 = RandomStringUtils.randomNumeric(temp);
