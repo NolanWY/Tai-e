@@ -14,7 +14,6 @@
     - reference: "<org.apache.commons.lang.math.RandomUtils: int nextInt()>"
     - reference: "<org.apache.commons.lang.math.RandomUtils: int nextInt(java.util.Random)>"
     - reference: "<org.apache.commons.lang.math.RandomUtils: int nextInt(int)>"
-    - reference: "<org.apache.commons.lang.math.RandomUtils: int nextInt(java.util.Random)>"
     - reference: "<org.apache.commons.lang.math.RandomUtils: int nextInt(java.util.Random,int)>"
     - reference: "<org.apache.commons.lang.math.RandomUtils: long nextLong()>"
     - reference: "<org.apache.commons.lang.math.RandomUtils: long nextLong(java.util.Random)>"
@@ -42,6 +41,3 @@
     - reference: "<org.apache.commons.lang.RandomStringUtils: java.lang.String random(int,int,int,boolean,boolean,char[],java.util.Random)>"
     - reference: "<org.apache.commons.lang.RandomStringUtils: java.lang.String random(int,java.lang.String)>"
     - reference: "<org.apache.commons.lang.RandomStringUtils: java.lang.String random(int,char[])>"
-    
-
-
