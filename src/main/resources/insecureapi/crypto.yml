@@ -5,7 +5,7 @@
     - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String)>"
       parameter: 'p1 = /(?i)"MD[25]"/ \\| p1 = /(?i)"SHA(-?1)?"/'
     - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String,java.lang.String)>"
-      parameter: 'p1 = /(?i)"MD[25]"/ \\| p1 = /(?i)"SHA(-?1)?"/
+      parameter: 'p1 = /(?i)"MD[25]"/ \\| p1 = /(?i)"SHA(-?1)?"/'
     - reference: "<java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String,java.security.Provider)>"
       parameter: 'p1 = /(?i)"MD[25]"/ \\| p1 = /(?i)"SHA(-?1)?"/
 
