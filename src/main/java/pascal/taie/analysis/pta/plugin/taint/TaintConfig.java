@@ -38,41 +38,23 @@ import pascal.taie.language.classes.ClassHierarchy;
 import pascal.taie.language.classes.JMethod;
 import pascal.taie.language.type.Type;
 import pascal.taie.language.type.TypeSystem;
-import pascal.taie.util.collection.Sets;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Configuration for taint analysis.
  */
-class TaintConfig {
+record TaintConfig(List<CallSource> callSources,
+                   List<ParamSource> paramSources,
+                   List<Sink> sinks,
+                   List<TaintTransfer> transfers) {
 
     private static final Logger logger = LogManager.getLogger(TaintConfig.class);
-
-    /**
-     * Set of sources.
-     */
-    private final Set<Source> sources;
-
-    /**
-     * Set of sinks.
-     */
-    private final Set<Sink> sinks;
-
-    /**
-     * Set of taint transfers;
-     */
-    private final Set<TaintTransfer> transfers;
-
-    private TaintConfig(Set<Source> sources, Set<Sink> sinks,
-                        Set<TaintTransfer> transfers) {
-        this.sources = sources;
-        this.sinks = sinks;
-        this.transfers = transfers;
-    }
 
     /**
      * Reads a taint analysis configuration from file
@@ -98,33 +80,14 @@ class TaintConfig {
         }
     }
 
-    /**
-     * @return sources in the configuration.
-     */
-    Set<Source> getSources() {
-        return sources;
-    }
-
-    /**
-     * @return sinks in the configuration.
-     */
-    Set<Sink> getSinks() {
-        return sinks;
-    }
-
-    /**
-     * @return taint transfers in the configuration.
-     */
-    Set<TaintTransfer> getTransfers() {
-        return transfers;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("TaintConfig:");
-        if (!sources.isEmpty()) {
+        if (!callSources.isEmpty() || !paramSources.isEmpty()) {
             sb.append("\nsources:\n");
-            sources.forEach(source ->
+            callSources.forEach(source ->
+                    sb.append("  ").append(source).append("\n"));
+            paramSources.forEach(source ->
                     sb.append("  ").append(source).append("\n"));
         }
         if (!sinks.isEmpty()) {
@@ -159,100 +122,148 @@ class TaintConfig {
                 throws IOException {
             ObjectCodec oc = p.getCodec();
             JsonNode node = oc.readTree(p);
-            Set<Source> sources = deserializeSources(node.get("sources"));
-            Set<Sink> sinks = deserializeSinks(node.get("sinks"));
-            Set<TaintTransfer> transfers = deserializeTransfers(node.get("transfers"));
-            return new TaintConfig(sources, sinks, transfers);
+            List<Source> sources = deserializeSources(node.get("sources"));
+            List<CallSource> callSources = sources.stream()
+                    .filter(s -> s instanceof CallSource)
+                    .map(s -> (CallSource) s)
+                    .toList();
+            List<ParamSource> paramSources = sources.stream()
+                    .filter(s -> s instanceof ParamSource)
+                    .map(s -> (ParamSource) s)
+                    .toList();
+            List<Sink> sinks = deserializeSinks(node.get("sinks"));
+            List<TaintTransfer> transfers = deserializeTransfers(node.get("transfers"));
+            return new TaintConfig(callSources, paramSources, sinks, transfers);
         }
 
         /**
          * Deserializes a {@link JsonNode} (assume it is an {@link ArrayNode})
-         * to a set of {@link Source}.
+         * to a list of {@link Source}.
          *
          * @param node the node to be deserialized
-         * @return set of deserialized {@link Source}
+         * @return list of deserialized {@link Source}
          */
-        private Set<Source> deserializeSources(JsonNode node) {
+        private List<Source> deserializeSources(JsonNode node) {
             if (node instanceof ArrayNode arrayNode) {
-                Set<Source> sources = Sets.newSet(arrayNode.size());
+                List<Source> sources = new ArrayList<>(arrayNode.size());
                 for (JsonNode elem : arrayNode) {
-                    String methodSig = elem.get("method").asText();
-                    JMethod method = hierarchy.getMethod(methodSig);
-                    if (method != null) {
-                        // if the method (given in config file) is absent in
-                        // the class hierarchy, just ignore it.
-                        Type type = typeSystem.getType(
-                                elem.get("type").asText());
-                        sources.add(new Source(method, type));
+                    JsonNode sourceKind = elem.get("kind");
+                    Source source;
+                    if (sourceKind != null) {
+                        source = switch (sourceKind.asText()) {
+                            case "call" -> deserializeCallSource(elem);
+                            case "param" -> deserializeParamSource(elem);
+                            default -> {
+                                logger.warn("Unknown source kind \"{}\" in {}",
+                                        sourceKind.asText(), elem.toString());
+                                yield null;
+                            }
+                        };
                     } else {
-                        logger.warn("Cannot find source method '{}'", methodSig);
+                        logger.warn("Ignore {} due to missing source \"kind\"",
+                                elem.toString());
+                        source = null;
+                    }
+                    if (source != null) {
+                        sources.add(source);
                     }
                 }
-                return Collections.unmodifiableSet(sources);
+                return Collections.unmodifiableList(sources);
             } else {
                 // if node is not an instance of ArrayNode, just return an empty set.
-                return Set.of();
+                return List.of();
+            }
+        }
+
+        @Nullable
+        private CallSource deserializeCallSource(JsonNode node) {
+            String methodSig = node.get("method").asText();
+            JMethod method = hierarchy.getMethod(methodSig);
+            if (method != null) {
+                int index = IndexUtils.toInt(node.get("index").asText());
+                Type type = typeSystem.getType(node.get("type").asText());
+                return new CallSource(method, index, type);
+            } else {
+                // if the method (given in config file) is absent in
+                // the class hierarchy, just ignore it.
+                logger.warn("Cannot find source method '{}'", methodSig);
+                return null;
+            }
+        }
+
+        @Nullable
+        private ParamSource deserializeParamSource(JsonNode node) {
+            String methodSig = node.get("method").asText();
+            JMethod method = hierarchy.getMethod(methodSig);
+            if (method != null) {
+                int index = IndexUtils.toInt(node.get("index").asText());
+                Type type = typeSystem.getType(node.get("type").asText());
+                return new ParamSource(method, index, type);
+            } else {
+                // if the method (given in config file) is absent in
+                // the class hierarchy, just ignore it.
+                logger.warn("Cannot find source method '{}'", methodSig);
+                return null;
             }
         }
 
         /**
          * Deserializes a {@link JsonNode} (assume it is an {@link ArrayNode})
-         * to a set of {@link Sink}.
+         * to a list of {@link Sink}.
          *
          * @param node the node to be deserialized
-         * @return set of deserialized {@link Sink}
+         * @return list of deserialized {@link Sink}
          */
-        private Set<Sink> deserializeSinks(JsonNode node) {
+        private List<Sink> deserializeSinks(JsonNode node) {
             if (node instanceof ArrayNode arrayNode) {
-                Set<Sink> sinks = Sets.newSet(arrayNode.size());
+                List<Sink> sinks = new ArrayList<>(arrayNode.size());
                 for (JsonNode elem : arrayNode) {
                     String methodSig = elem.get("method").asText();
                     JMethod method = hierarchy.getMethod(methodSig);
                     if (method != null) {
                         // if the method (given in config file) is absent in
                         // the class hierarchy, just ignore it.
-                        int index = elem.get("index").asInt();
+                        int index = IndexUtils.toInt(elem.get("index").asText());
                         sinks.add(new Sink(method, index));
                     } else {
                         logger.warn("Cannot find sink method '{}'", methodSig);
                     }
                 }
-                return Collections.unmodifiableSet(sinks);
+                return Collections.unmodifiableList(sinks);
             } else {
                 // if node is not an instance of ArrayNode, just return an empty set.
-                return Set.of();
+                return List.of();
             }
         }
 
         /**
          * Deserializes a {@link JsonNode} (assume it is an {@link ArrayNode})
-         * to a set of {@link TaintTransfer}.
+         * to a list of {@link TaintTransfer}.
          *
          * @param node the node to be deserialized
-         * @return set of deserialized {@link TaintTransfer}
+         * @return list of deserialized {@link TaintTransfer}
          */
-        private Set<TaintTransfer> deserializeTransfers(JsonNode node) {
+        private List<TaintTransfer> deserializeTransfers(JsonNode node) {
             if (node instanceof ArrayNode arrayNode) {
-                Set<TaintTransfer> transfers = Sets.newSet(arrayNode.size());
+                List<TaintTransfer> transfers = new ArrayList<>(arrayNode.size());
                 for (JsonNode elem : arrayNode) {
                     String methodSig = elem.get("method").asText();
                     JMethod method = hierarchy.getMethod(methodSig);
                     if (method != null) {
                         // if the method (given in config file) is absent in
                         // the class hierarchy, just ignore it.
-                        int from = TaintTransfer.toInt(elem.get("from").asText());
-                        int to = TaintTransfer.toInt(elem.get("to").asText());
-                        Type type = typeSystem.getType(
-                                elem.get("type").asText());
+                        int from = IndexUtils.toInt(elem.get("from").asText());
+                        int to = IndexUtils.toInt(elem.get("to").asText());
+                        Type type = typeSystem.getType(elem.get("type").asText());
                         transfers.add(new TaintTransfer(method, from, to, type));
                     } else {
                         logger.warn("Cannot find taint-transfer method '{}'", methodSig);
                     }
                 }
-                return Collections.unmodifiableSet(transfers);
+                return Collections.unmodifiableList(transfers);
             } else {
                 // if node is not an instance of ArrayNode, just return an empty set.
-                return Set.of();
+                return List.of();
             }
         }
     }

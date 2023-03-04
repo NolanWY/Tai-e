@@ -23,18 +23,20 @@
 package pascal.taie.analysis.pta.plugin.taint;
 
 import pascal.taie.language.classes.JMethod;
+import pascal.taie.language.type.Type;
 
 /**
- * Represents a sink in taint analysis.
+ * Represents sources which generates taint objects at method calls.
  *
- * @param method the sink method.
- * @param index  the specific index used to locate the sensitive argument
- *               at the call site of {@code method}.
+ * @param method the method that generates taint object for variable at call site.
+ * @param index  the index of the tainted variable at the call site.
+ * @param type   type of the generated taint object.
  */
-record Sink(JMethod method, int index) {
+record CallSource(JMethod method, int index, Type type) implements Source {
 
     @Override
     public String toString() {
-        return method + "/" + IndexUtils.toString(index);
+        return String.format("CallSource{%s/%s(%s)}",
+                method, IndexUtils.toString(index), type);
     }
 }

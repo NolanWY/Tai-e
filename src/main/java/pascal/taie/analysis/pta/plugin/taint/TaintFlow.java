@@ -22,29 +22,26 @@
 
 package pascal.taie.analysis.pta.plugin.taint;
 
-import pascal.taie.analysis.graph.callgraph.CallGraphs;
-import pascal.taie.ir.stmt.Invoke;
+import javax.annotation.Nonnull;
+import java.util.Comparator;
 
 /**
  * Each instance represents a taint flow from source to sink.
  */
-public record TaintFlow(Invoke sourceCall, Invoke sinkCall, int index)
+public record TaintFlow(SourcePoint sourcePoint, SinkPoint sinkPoint)
         implements Comparable<TaintFlow> {
 
+    private static final Comparator<TaintFlow> COMPARATOR =
+            Comparator.comparing(TaintFlow::sourcePoint)
+                    .thenComparing(TaintFlow::sinkPoint);
+
     @Override
-    public int compareTo(TaintFlow other) {
-        int source = sourceCall.compareTo(other.sourceCall);
-        if (source != 0) {
-            return source;
-        }
-        int sink = sinkCall.compareTo(other.sinkCall);
-        return sink != 0 ? sink : index - other.index;
+    public int compareTo(@Nonnull TaintFlow other) {
+        return COMPARATOR.compare(this, other);
     }
 
     @Override
     public String toString() {
-        return String.format("TaintFlow{%s -> %s/%d}",
-                CallGraphs.toString(sourceCall),
-                CallGraphs.toString(sinkCall), index);
+        return String.format("TaintFlow{%s -> %s}", sourcePoint, sinkPoint);
     }
 }

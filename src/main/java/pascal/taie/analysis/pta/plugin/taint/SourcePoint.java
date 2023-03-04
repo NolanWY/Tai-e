@@ -25,16 +25,17 @@ package pascal.taie.analysis.pta.plugin.taint;
 import pascal.taie.language.classes.JMethod;
 
 /**
- * Represents a sink in taint analysis.
- *
- * @param method the sink method.
- * @param index  the specific index used to locate the sensitive argument
- *               at the call site of {@code method}.
+ * Represents a program location where the taint object is generated.
  */
-record Sink(JMethod method, int index) {
+interface SourcePoint extends Comparable<SourcePoint> {
 
-    @Override
-    public String toString() {
-        return method + "/" + IndexUtils.toString(index);
+    static int compare(CallSourcePoint csp, ParamSourcePoint psp) {
+        JMethod rspMethod = csp.sourceCall().getContainer();
+        JMethod pspMethod = psp.sourceMethod();
+        if (rspMethod.equals(pspMethod)) {
+            return 1;
+        } else {
+            return rspMethod.toString().compareTo(pspMethod.toString());
+        }
     }
 }
