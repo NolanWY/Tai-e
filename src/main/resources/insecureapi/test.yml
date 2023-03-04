@@ -1,6 +1,6 @@
 - bugType: INSECURE_API_USE
   severity: CRITICAL
-  description: these API is insecure.
+  description: These APIs are insecure.
   methodList:
     - reference: '<InsecureAPITest: void unsafe()>'
     - reference: '<A: void unsafe1()>'

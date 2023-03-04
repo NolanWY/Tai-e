@@ -43,8 +43,6 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
 
     private static final Logger logger = LogManager.getLogger(InsecureAPIUsageDetector.class);
 
-    private final String configPath;
-
     /**
      Store the map from methodRef(String) to parameters(Set<String>)
     */
@@ -64,7 +62,7 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
 
     public InsecureAPIUsageDetector(AnalysisConfig config){
         super(config);
-        this.configPath = config.getOptions().get("path").toString();
+        String configPath = config.getOptions().get("config-dir").toString();
         InsecureAPIBugConfig bugConfig = InsecureAPIBugConfig.readConfig(configPath);
         this.paramPatternMap = Maps.newMultiMap();
         this.bugInfoMap = Maps.newMap();

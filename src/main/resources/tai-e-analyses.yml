@@ -151,4 +151,4 @@
   analysisClass: pascal.taie.analysis.bugfinder.insecureapi.InsecureAPIUsageDetector
   id: insecure-api
   options:
-    path: src/main/resources/insecureapi
+    config-dir: src/main/resources/insecureapi

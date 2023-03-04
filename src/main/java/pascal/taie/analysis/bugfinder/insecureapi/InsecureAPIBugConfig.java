@@ -48,7 +48,7 @@ class InsecureAPIBugConfig {
         this.bugSet = bugSet;
     }
 
-    static InsecureAPIBugConfig readConfig(String directory) {
+    public static InsecureAPIBugConfig readConfig(String directory) {
         File[] files = new File(directory).listFiles(File::isFile);
         if(files == null) {
             throw new ConfigException("Failed to open insecure API analysis config directory " + directory);
