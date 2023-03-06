@@ -20,12 +20,13 @@
  * License along with Tai-e. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pascal.taie.analysis.bugfinder.insecureapi;
+package pascal.taie.analysis.bugfinder.security.insecureapi;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pascal.taie.analysis.MethodAnalysis;
 import pascal.taie.analysis.bugfinder.BugInstance;
+import pascal.taie.analysis.bugfinder.security.SecurityBugInfo;
 import pascal.taie.config.AnalysisConfig;
 import pascal.taie.ir.IR;
 import pascal.taie.ir.stmt.Invoke;
@@ -53,7 +54,7 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
      it's convenient to get the information to create
      the BugInstance via this map
     */
-    private final Map<InsecureAPI, APIBugInfo> bugInfoMap;
+    private final Map<InsecureAPI, SecurityBugInfo> bugInfoMap;
 
     /**
      * Store all methodRef in the configuration file
@@ -69,11 +70,11 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
         this.insecureMethodRef = Sets.newSet();
 
         bugConfig.getBugSet().forEach(bug ->
-                bug.insecureAPISet().forEach(insecureAPI -> {
+                bug.getInsecureAPISet().forEach(insecureAPI -> {
                     if(insecureAPI.paramRegex() != null) {
                         paramPatternMap.put(insecureAPI.reference(), insecureAPI.paramRegex());
                     }
-                    bugInfoMap.put(insecureAPI, bug.bugInfo());
+                    bugInfoMap.put(insecureAPI, bug);
                     insecureMethodRef.add(insecureAPI.reference());
         }));
     }
@@ -84,9 +85,9 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
         ir.invokes(false)
                 .filter(invoke -> insecureMethodRef.contains(invoke.getMethodRef().toString()))
                 .forEach(invoke -> {
-            APIBugInfo info = getBugInfo(invoke);
+            SecurityBugInfo info = getBugInfo(invoke);
             if(info != null){
-                bugInstances.add(new BugInstance(info.bugType(), info.severity(), ir.getMethod())
+                bugInstances.add(new BugInstance(info.getBugType(), info.getSeverity(), ir.getMethod())
                         .setSourceLine(invoke.getLineNumber()));
             }
         });
@@ -100,7 +101,7 @@ public class InsecureAPIUsageDetector extends MethodAnalysis<Set<BugInstance>> {
      @return corresponding APIBugInfo if matching successful, otherwise null
      */
     @Nullable
-    private APIBugInfo getBugInfo(Invoke invoke){
+    private SecurityBugInfo getBugInfo(Invoke invoke){
         String matchedPattern = null;
         for(String patternRegex : paramPatternMap.get(invoke.getMethodRef().toString())){
             if(ParamCondPredictor.test(invoke.getInvokeExp().getArgs(), patternRegex)){

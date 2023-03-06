@@ -20,7 +20,7 @@
  * License along with Tai-e. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pascal.taie.analysis.bugfinder.insecureapi;
+package pascal.taie.analysis.bugfinder.security.insecureapi;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import pascal.taie.analysis.bugfinder.BugType;
 import pascal.taie.analysis.bugfinder.Severity;
+import pascal.taie.analysis.bugfinder.security.SecurityBugType;
 import pascal.taie.config.ConfigException;
 import pascal.taie.util.collection.Sets;
 
@@ -42,9 +43,9 @@ import java.util.Set;
 
 class InsecureAPIBugConfig {
 
-    private final Set<InsecureAPIBug> bugSet;
+    private final Set<InsecureAPIBugInfo> bugSet;
 
-    private InsecureAPIBugConfig(Set<InsecureAPIBug> bugSet) {
+    private InsecureAPIBugConfig(Set<InsecureAPIBugInfo> bugSet) {
         this.bugSet = bugSet;
     }
 
@@ -58,7 +59,7 @@ class InsecureAPIBugConfig {
         SimpleModule module = new SimpleModule();
         module.addDeserializer(InsecureAPIBugConfig.class, new InsecureAPIBugConfig.Deserializer());
         mapper.registerModule(module);
-        Set<InsecureAPIBug> APIBugSet = Sets.newSet();
+        Set<InsecureAPIBugInfo> APIBugSet = Sets.newSet();
 
         for(File file : files) {
             try {
@@ -72,7 +73,7 @@ class InsecureAPIBugConfig {
         return new InsecureAPIBugConfig(APIBugSet);
     }
 
-    Set<InsecureAPIBug> getBugSet() { return bugSet; }
+    Set<InsecureAPIBugInfo> getBugSet() { return bugSet; }
 
     private static class Deserializer extends JsonDeserializer<InsecureAPIBugConfig> {
         @Override
@@ -80,11 +81,9 @@ class InsecureAPIBugConfig {
             ObjectCodec oc = p.getCodec();
             JsonNode node = oc.readTree(p);
             if(node instanceof ArrayNode arrayNode) {
-                Set<InsecureAPIBug> bugSet = Sets.newSet(arrayNode.size());
+                Set<InsecureAPIBugInfo> bugSet = Sets.newSet(arrayNode.size());
                 for(JsonNode elem : arrayNode) {
-                    APIBugInfo bugInfo = deserializeAPIBugInfo(elem);
-                    Set<InsecureAPI> insecureAPISet = deserializeInsecureAPISet(elem);
-                    bugSet.add(new InsecureAPIBug(bugInfo, insecureAPISet));
+                    bugSet.add(deserializeAPIBugInfo(elem));
                 }
                 return new InsecureAPIBugConfig(bugSet);
             } else {
@@ -93,11 +92,12 @@ class InsecureAPIBugConfig {
 
         }
 
-        private APIBugInfo deserializeAPIBugInfo(JsonNode node) {
-            BugType bugType = new InsecureAPIBugType(node.get("bugType").asText());
+        private InsecureAPIBugInfo deserializeAPIBugInfo(JsonNode node) {
+            BugType bugType = new SecurityBugType(node.get("bugType").asText());
             Severity severity = Severity.valueOf(node.get("severity").asText());
             String description = node.get("description").asText();
-            return new APIBugInfo(bugType, severity, description);
+            Set<InsecureAPI> apiSet = deserializeInsecureAPISet(node);
+            return new InsecureAPIBugInfo(bugType, severity, description, apiSet);
         }
 
         private Set<InsecureAPI> deserializeInsecureAPISet(JsonNode node) {

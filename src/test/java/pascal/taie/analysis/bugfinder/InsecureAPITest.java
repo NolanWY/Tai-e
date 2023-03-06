@@ -2,7 +2,7 @@ package pascal.taie.analysis.bugfinder;
 
 import org.junit.Test;
 import pascal.taie.analysis.Tests;
-import pascal.taie.analysis.bugfinder.insecureapi.InsecureAPIUsageDetector;
+import pascal.taie.analysis.bugfinder.security.insecureapi.InsecureAPIUsageDetector;
 
 public class InsecureAPITest {
 

@@ -154,3 +154,7 @@
   id: insecure-api
   options:
     config-dir: src/main/resources/insecureapi
+
+- description: find possible injection vulnerability
+  analysisClass: pascal.taie.analysis.bugfinder.injection.InjectionDetector
+  id: injection

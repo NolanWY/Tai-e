@@ -20,10 +20,32 @@
  * License along with Tai-e. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pascal.taie.analysis.bugfinder.insecureapi;
+package pascal.taie.analysis.bugfinder.security;
 
 import pascal.taie.analysis.bugfinder.BugType;
-import pascal.taie.analysis.bugfinder.Severity;
 
-record APIBugInfo(BugType bugType, Severity severity, String description) {
+public class SecurityBugType implements BugType {
+
+    private final String bugDescription;
+
+    public SecurityBugType(String bugDescription) {
+        this.bugDescription = bugDescription;
+    }
+
+    @Override
+    public String toString() {
+        return bugDescription;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SecurityBugType that)) return false;
+        return bugDescription.equals(that.bugDescription);
+    }
+
+    @Override
+    public int hashCode() {
+        return bugDescription.hashCode();
+    }
 }

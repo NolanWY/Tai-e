@@ -20,20 +20,7 @@
  * License along with Tai-e. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pascal.taie.analysis.bugfinder.insecureapi;
+package pascal.taie.analysis.bugfinder.security.insecureapi;
 
-import pascal.taie.analysis.bugfinder.BugType;
-
-class InsecureAPIBugType implements BugType {
-
-    private final String bugDescription;
-
-    public InsecureAPIBugType(String bugDescription) {
-        this.bugDescription = bugDescription;
-    }
-
-    @Override
-    public String toString() {
-        return bugDescription;
-    }
+record InsecureAPI(String reference, String paramRegex) {
 }

@@ -20,7 +20,7 @@
  * License along with Tai-e. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pascal.taie.analysis.bugfinder.insecureapi;
+package pascal.taie.analysis.bugfinder.security.insecureapi;
 
 import pascal.taie.ir.exp.Var;
 import pascal.taie.util.AnalysisException;
